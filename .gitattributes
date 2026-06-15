@@ -1,0 +1,14 @@
+# 统一文本行尾，避免跨平台 diff 噪声 / normalize text line endings
+* text=auto eol=lf
+
+# Python 钩子与脚本固定 LF / Python hooks and scripts use LF
+*.py text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+
+# 二进制模板按原样存储 / store binary templates as-is
+*.pptx binary
+*.docx binary
+*.xlsx binary
+*.png binary
+*.pdf binary

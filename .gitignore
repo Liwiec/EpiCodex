@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+
+# 钩子运行时状态文件（不应入库）/ hook runtime state
+.rds_reminded
+.fig_selfcheck_state
+
+# 冒烟测试产物 / smoke-test artifacts
+_smoketest_report.*
+
+# 本机隐私配置（只提交 config.toml.example）/ machine-private config
+config.toml
+auth.json
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db
