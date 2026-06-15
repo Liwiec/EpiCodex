@@ -1,0 +1,90 @@
+# EpiCodex 示例配置（脱敏模板）
+# 用法：复制为 CODEX_HOME/config.toml（本机通常是 <你的Codex目录>\.codex\config.toml），
+#       再按注释填入本机实际值。本文件只保留通用键，已删除所有本机绝对路径、鉴权、
+#       受信项目、MCP 运行时与会话隐私——这些请勿提交到公共仓库。
+#
+# 注意：skill 路由不写在这里。全局规则与路由表在 AGENTS.md，各 skill 的触发场景在其 SKILL.md。
+#       不要往 config.toml 添加不受支持的 skill 路由键。
+
+# ---- 模型 ----
+model = "gpt-5.5"                 # 按你的可用模型填写
+model_provider = "openai"
+model_reasoning_effort = "xhigh"  # low | medium | high | xhigh
+personality = "pragmatic"
+service_tier = "default"
+
+# 自定义 API 端点（如走官方则整段删除；如走中继则填你自己的，勿提交真实地址）
+# base_url = "https://YOUR-API-ENDPOINT.example.com"
+
+# ---- 平台 ----
+[windows]
+sandbox = "unelevated"            # Windows 沙箱级别
+
+[desktop]
+sansFontSize = 14
+
+# ---- 记忆 ----
+[memories]
+generate_memories = true
+use_memories = true
+
+# ---- 特性开关 ----
+[features]
+js_repl = false
+
+# ---- 插件（按需启用；名称随你本机已安装的市场/运行时而定）----
+# [plugins."documents@openai-primary-runtime"]
+# enabled = true
+# [plugins."spreadsheets@openai-primary-runtime"]
+# enabled = true
+# [plugins."presentations@openai-primary-runtime"]
+# enabled = true
+# [plugins."browser@openai-bundled"]
+# enabled = true
+
+# ---- 受信项目（本机路径，按需逐项添加；勿提交真实路径）----
+# [projects.'C:\path\to\your\project']
+# trust_level = "trusted"
+
+# ---- 钩子 / Hooks（机械强制硬红线，对照 EpiClaude 的 settings.json 片段）----
+# 把下面 <CODEX_HOME> 换成你本机 Codex 主目录（即放 config.toml 的那个目录，如 D:\Codex\.codex）。
+# Codex 工具模型：文件编辑 = apply_patch，命令 = Bash，故 matcher 用 apply_patch / Bash
+# （区别于 Claude Code 的 Write|Edit|MultiEdit）。脚本用 Python 写以兼容 Windows。
+# 安装后请实测一次是否真的触发（Codex 部分版本/桌面端存在钩子不运行的已知问题）。
+
+# PreToolUse：拦截对 01_data/rawdata 的修改
+[[hooks.PreToolUse]]
+matcher = "apply_patch|Bash"
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'python "<CODEX_HOME>\hooks\protect_rawdata.py"'
+timeout = 15
+
+# PostToolUse(apply_patch)：扫 AI 痕迹/emoji + R 语法
+[[hooks.PostToolUse]]
+matcher = "apply_patch"
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = 'python "<CODEX_HOME>\hooks\scan_ai_trace.py"'
+timeout = 20
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = 'python "<CODEX_HOME>\hooks\check_r_syntax.py"'
+timeout = 30
+
+# PostToolUse(Bash)：检测 06_results 新 .rds + 04_figures 新图自检
+[[hooks.PostToolUse]]
+matcher = "Bash"
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = 'python "<CODEX_HOME>\hooks\check_results_rds.py"'
+timeout = 20
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = 'python "<CODEX_HOME>\hooks\fig_selfcheck.py"'
+timeout = 20
+
+# ---- 以下段落含本机绝对路径 / 鉴权 / 运行时，故意从模板中省略，请勿照搬他人配置 ----
+# [marketplaces.*]            # 本机市场源路径
+# [mcp_servers.*]             # 例如 node_repl，含可执行文件绝对路径、pipe 目录、SHA256 白名单
+# notify = [ ... ]            # 含 computer-use 可执行文件绝对路径
